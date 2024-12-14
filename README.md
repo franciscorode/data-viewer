@@ -18,10 +18,6 @@ python3 -m uvicorn main:app --reload
 
 ```
 
-GET http://127.0.0.1:8000/api/events
-GET http://127.0.0.1:8000/api/events?sourceip=192.168.0.1
-GET http://127.0.0.1:8000/api/events?startDate=2024-06-15T12:00:00&endDate=2024-06-15T12:30:00
-
 ## Client
 
 ```shell
