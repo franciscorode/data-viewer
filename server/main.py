@@ -33,6 +33,9 @@ async def on_startup():
 @app.get("/api/events", response_model=List[dict])
 async def get_events(
     source_ip: Optional[str] = Query(None),
+    destination_ip: Optional[str] = Query(None),
+    destination_port: Optional[str] = Query(None),
+    computer_name: Optional[str] = Query(None),
     start_date: Optional[str] = Query(None),
     end_date: Optional[str] = Query(None),
     limit: Optional[int] = Query(100, le=1000),
@@ -42,6 +45,12 @@ async def get_events(
 
     if source_ip:
         query = query.where(Event.source_ip.contains(source_ip))
+    if destination_ip:
+        query = query.where(Event.destination_ip.contains(destination_ip))
+    if destination_port:
+        query = query.where(Event.destination_port.contains(destination_port))
+    if computer_name:
+        query = query.where(Event.computer_name.contains(computer_name))
     if start_date:
         query = query.where(Event.timestamp >= datetime.fromisoformat(start_date))
     if end_date:

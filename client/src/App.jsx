@@ -7,18 +7,28 @@ import 'chart.js/auto';
 
 function App() {
   const [events, setEvents] = useState([]);
-    const [searchTerm, setSearchTerm] = useState('');
+    const [searchSourceIpTerm, setSearchSourceIpTerm] = useState('');
+    const [searchDestIpTerm, setSearchDestIpTerm] = useState('');
+    const [searchDestPortTerm, setSearchDestPortTerm] = useState('');
+    const [searchNameTerm, setSearchNameTerm] = useState('');
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
 
     useEffect(() => {
         fetchEvents();
-    }, [searchTerm, startDate, endDate]);
+    }, [searchSourceIpTerm, searchDestIpTerm, searchDestPortTerm, searchNameTerm, startDate, endDate]);
 
     const fetchEvents = async () => {
         try {
             const response = await axios.get('http://localhost:8000/api/events?limit=1000', {
-                params: { source_ip: searchTerm, start_date: startDate, end_date: endDate },
+                params: { 
+                    source_ip: searchSourceIpTerm,
+                    destination_ip: searchDestIpTerm,
+                    destination_port: searchDestPortTerm,
+                    computer_name: searchNameTerm,
+                    start_date: startDate,
+                    end_date: endDate
+                },
             });
             setEvents(response.data);
         } catch (err) {
@@ -66,13 +76,45 @@ function App() {
 
     return (
       <div>
+        <style>
+            {`.event-table {
+                width: 100%;
+                border-collapse: collapse;
+                margin: 20px 0;
+            }
+
+            .event-table th,
+            .event-table td {
+                border: 1px solid #000;
+                padding: 8px;
+                text-align: left;
+            }`}
+        </style>
           <h1>Event Dashboard</h1>
           <div>
               <input
                   type="text"
                   placeholder="Search by source IP"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
+                  value={searchSourceIpTerm}
+                  onChange={(e) => setSearchSourceIpTerm(e.target.value)}
+              />
+              <input
+                  type="text"
+                  placeholder="Search by destination IP"
+                  value={searchDestIpTerm}
+                  onChange={(e) => setSearchDestIpTerm(e.target.value)}
+              />
+              <input
+                  type="text"
+                  placeholder="Search by destination port"
+                  value={searchDestPortTerm}
+                  onChange={(e) => setSearchDestPortTerm(e.target.value)}
+              />
+              <input
+                  type="text"
+                  placeholder="Search by computer name"
+                  value={searchNameTerm}
+                  onChange={(e) => setSearchNameTerm(e.target.value)}
               />
               <input
                   type="date"
@@ -86,15 +128,32 @@ function App() {
               />
           </div>
           <Line data={chartData} />
-          <ul>
-              {events.map((event) => (
-                  <li key={event.id}>
-                      {event.timestamp} - {event.source_ip} to {event.destination_ip}:{event.destination_port}
-                  </li>
-              ))}
-          </ul>
+          <table className="event-table">
+            <thead>
+                <tr>
+                    <th>Timestamp</th>
+                    <th>Computer Name</th>
+                    <th>Source IP</th>
+                    <th>Destination IP</th>
+                    <th>Destination Port</th>
+                </tr>
+            </thead>
+            <tbody>
+                {events.map((event) => (
+                    <tr key={event.id}>
+                        <td>{event.timestamp}</td>
+                        <td>{event.computer_name}</td>
+                        <td>{event.source_ip}</td>
+                        <td>{event.destination_ip}</td>
+                        <td>{event.destination_port}</td>
+                    </tr>
+                ))}
+            </tbody>
+        </table>
+
       </div>
   );
 }
 
 export default App
+
