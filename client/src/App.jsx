@@ -17,7 +17,7 @@ function App() {
 
     const fetchEvents = async () => {
         try {
-            const response = await axios.get('http://localhost:8000/api/events', {
+            const response = await axios.get('http://localhost:8000/api/events?limit=1000', {
                 params: { source_ip: searchTerm, start_date: startDate, end_date: endDate },
             });
             setEvents(response.data);
@@ -26,18 +26,43 @@ function App() {
         }
     };
 
-    const eventTimestamps = events.map(event => event.timestamp);
+
+    const getWeekStart = (dateStr) => {
+        const date = new Date(dateStr);
+        const day = date.getDay();
+        const diff = day === 0 ? -6 : 1 - day;
+        date.setDate(date.getDate() + diff);
+        return date.toISOString().split('T')[0];
+    };
+    
+    const groupEventsByWeek = (events) => {
+        const grouped = {};
+
+        events.forEach(event => {
+            const weekStart = getWeekStart(event.timestamp);
+            grouped[weekStart] = (grouped[weekStart] || 0) + 1;
+        });
+    
+        const labels = Object.keys(grouped).sort();
+        const dataPoints = labels.map(label => grouped[label]);
+    
+        return { labels, dataPoints };
+    };
+    
+    const { labels, dataPoints } = groupEventsByWeek(events);
+
     const chartData = {
-        labels: eventTimestamps,
+        labels,
         datasets: [
             {
-                label: 'Event Timeline',
-                data: eventTimestamps.map((_, index) => index + 1),
+                label: 'Events Per Week',
+                data: dataPoints,
                 fill: false,
                 borderColor: 'blue',
             },
         ],
     };
+    
 
     return (
       <div>
